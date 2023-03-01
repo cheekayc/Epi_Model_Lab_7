@@ -1,14 +1,14 @@
 ## Lab 7. Stochastic models
 ## Ebola: Legrand et al. 2007
 ## A transition rate, depending only on the present state of the population, 
-## is allocated to each transition labmda_i (see Table 2). 
+## is allocated to each transition lambda_i (see Table 2). 
 ## At each iteration of the algorithm, a time tau_i is drawn from an exponential distribution 
-## with parameter labmda_i for each transition. 
-## The next transition m is the transition that has the minimum time to
-# occurence (tau_m). Counts in each compartment are updated accordingly.
+## with parameter lambda_i for each transition. 
+## The next transition m is the transition that has the minimum time to occurrence (tau_m). 
+# Counts in each compartment are updated accordingly.
 # rate of change
-# rate.se=S/N*(beta.I*I+beta.H*H+beta.F*FF);  # S->E
-# rate.ei=alpha*E;  # E->I
+# rate.se = S/N*(beta.I*I+beta.H*H+beta.F*FF);  # S->E
+# rate.ei = alpha*E;  # E->I
 # rate.ih=gamma.h*theta1*I; # I->H
 # rate.hf=gamma.dh*delta2*H;  # H->F
 # rate.fr=gamma.f*FF;  # F->R
@@ -23,14 +23,14 @@
 # RUN THE MODEL WITHOUT INTERVENTION
 # parameters (no control): time in week
 alpha=1; # incubation period: 7 days = 1 week
-gamma.h=7/5; # from onset to hopspitalization: 5 days
+gamma.h=7/5; # from onset to hospitalization: 5 days
 gamma.d=7/9.6; # from onset to death: 9.6 days
 gamma.i=7/10; # from onset to end of infectiousness for survivors: 10 days
 gamma.f=7/2; # from death to traditional burial 2 days
 gamma.ih=7/(10-5); # from hospitalization to end of infectiousness for survivors
 gamma.dh=7/(9.6-5); # from hospitalization to death
 theta1=.67; # proportion infectious in the hospital
-delta1=.8; # CFR for unhospitalized
+delta1=.8; # CFR for non-hospitalized
 delta2=.8; # CFR for hospitalize
 beta.I=.588; # transmission rate in the community
 beta.H=.794; # transmission rate in the hospital
@@ -46,7 +46,8 @@ num_wk=5; # NUMBER OF WEEK, CHANGE ACCORDINGLY
 ## DEPENDING ON WHETHER THE EPID TAKES OFF AFTER THE FIRST FEW CASES,
 ## THE TIME TO COMPLETE THE RUN VARIES
 ## IT WILL TAKE MUCH LONGER TO RUN IF YOU INCREASE THE NUM_WK TO LARGER NUMBER
-while((I>0 | E>0 | H>0 | FF>0) & S>0 & tm<num_wk){ # simulate epid for the first 20 week without ctrl
+# simulate the epidemic for the first 20 week without ctrl
+while((I>0 | E>0 | H>0 | FF>0) & S>0 & tm<num_wk){ # if all the conditions are true, execute the following:
   # step 1: compute the transition rates
   rate.se=S/N*(beta.I*I+beta.H*H+beta.F*FF);  # S->E
   rate.ei=alpha*E;  # E->I
@@ -58,8 +59,8 @@ while((I>0 | E>0 | H>0 | FF>0) & S>0 & tm<num_wk){ # simulate epid for the first
   rate.hr=gamma.ih*(1-delta2)*H; # H->R
   rate.tot=rate.se+rate.ei+rate.ih+rate.hf+rate.fr+rate.ir+rate.if+rate.hr
   
-  # step 2: draw a random number, u1, betw 0 and 1 and 
-  # calcualte the time after which the next transition occurs
+  # step 2: draw a random number, u1, between 0 and 1 and 
+  # calculate the time after which the next transition occurs
   u1=runif(1); # draw a random number 
   tau_i=-log(u1)/rate.tot
 
@@ -103,18 +104,18 @@ while((I>0 | E>0 | H>0 | FF>0) & S>0 & tm<num_wk){ # simulate epid for the first
 } 
 colnames(res)=c('time','tm_step','S','E','I','H','FF','R','cumI')
 
-if(F){
+if(T){
   ## EXAMPLE CODE: to aggregate the results to weekly interval
-  colnames(res)=c('time','S','E','I','H','FF','R','cumI')
-  num_wk=ceiling(res[nrow(res),'time'])
-  wkly.res=matrix(NA,num_wk,8); colnames(wkly.res)=c('time','S','E','I','H','FF','R','cumI')
+  # colnames(res)=c('time','S','E','I','H','FF','R','cumI')
+  num_wk=ceiling(res1[nrow(res1),'time'])
+  wkly.res1=matrix(NA,num_wk,9); colnames(wkly.res1)=c('time', 'tm_step', 'S','E','I','H','FF','R','cumI')
   num_events=NULL;
   for(wk in 1:num_wk){
-    idx=tail(which(res[,'time']<wk),1);
-    wkly.res[wk,]=res[idx,];
+    idx=tail(which(res1[,'time']<wk),1);
+    wkly.res1[wk,]=res1[idx,];
   }
   # compute the weekly incidency
-  wklyInci=wkly.res[-1,'cumI']-wkly.res[-nrow(wkly.res),'cumI']
+  wklyInci=wkly.res1[-1,'cumI']-wkly.res1[-nrow(wkly.res1),'cumI']
   # plot it
   par(mfrow = c(1,1), mar = c(2.5, 2.5, .5, .5), mgp = c(1.5, .3, 0), tck = -.02)
   plot(wklyInci, type = 'l', ylab='Weekly incidence',xlab='Week')

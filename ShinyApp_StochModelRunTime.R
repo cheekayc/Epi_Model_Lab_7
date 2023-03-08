@@ -5,8 +5,6 @@
 library(shiny)
 library(deSolve)
 
-
-
 ui <- fluidPage(h2('Computing Time'),
                 
                 # outputs
